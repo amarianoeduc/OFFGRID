@@ -1,5 +1,4 @@
 <?php
-
 include 'config.php';
 
 session_start();
@@ -56,17 +55,7 @@ if (isset($_POST['buy_now'])) {
    }
 }
 
-$last_added_item_query = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id' ORDER BY id DESC LIMIT 1") or die('query failed');
-$last_added_item = mysqli_fetch_assoc($last_added_item_query);
-
-$category_query = mysqli_query($conn, "SELECT DISTINCT category FROM `products`") or die('query failed');
-$categories = mysqli_fetch_all($category_query, MYSQLI_ASSOC);
-
-$selected_category = isset($_GET['category']) ? $_GET['category'] : '';
-$category_filter = !empty($selected_category) ? "WHERE category = '$selected_category'" : '';
-
-$select_products = mysqli_query($conn, "SELECT * FROM `products` $category_filter") or die('query failed');
-
+$select_products = mysqli_query($conn, "SELECT * FROM `products`") or die('query failed');
 ?>
 
 <!DOCTYPE html>
@@ -75,73 +64,233 @@ $select_products = mysqli_query($conn, "SELECT * FROM `products` $category_filte
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>shop</title>
+    <title>Shop - Product Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/sarili.css">
+    <style>
+        .heading {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.2rem;
+            background: #f8f9fa;
+        }
+
+        .heading h3 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .heading p {
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .heading p a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .heading p a:hover {
+            text-decoration: underline;
+        }
+
+        .product-details {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .product-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-container {
+            flex: 0 0 50%;
+            max-width: 600px;
+        }
+
+        .image-container .image {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .details-container {
+            flex: 0 0 45%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .details-container .name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .details-container .price {
+            font-size: 22px;
+            color: #e74c3c;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .details-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .details-container label {
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 5px;
+        }
+
+        .details-container select,
+        .details-container input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .details-container .btn,
+        .details-container .btn-2 {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .details-container .btn {
+            background-color: #27ae60;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .details-container .btn-2 {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .details-container .btn:hover {
+            background-color: #219a52;
+        }
+
+        .details-container .btn-2:hover {
+            background-color: #2980b9;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        /* Ensuring side by side layout is maintained */
+        @media (max-width: 768px) {
+            .product-info {
+                flex-direction: row;
+                flex-wrap: nowrap;
+            }
+
+            .image-container,
+            .details-container {
+                flex: 0 0 50%;
+                min-width: 0;
+            }
+
+            .details-container {
+                padding: 10px;
+            }
+
+            .details-container .name {
+                font-size: 20px;
+            }
+
+            .details-container .price {
+                font-size: 18px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="preloader">
-   </div>  
+    <?php include 'header.php'; ?>
 
-   <?php include 'header.php'; ?>
+    <div class="heading">
+        <h3>Product Details</h3>
+        <p><a href="home.php">Home</a> / <a href="shop.php">Shop</a> / Product Details</p>
+    </div>
 
-   <div class="heading">
-      <h3>Product Details</h3>
-      <p> <a href="home.php">Home</a> / <a href="shop.php">Shop</a> / Product Details</p>
-   </div>
+    <section class="product-details">
+        <?php
+        if(isset($_GET['id'])){
+            $id = $_GET['id'];
+            $product_query = mysqli_query($conn, "SELECT * FROM `products` WHERE id = $id") or die('query failed');
+            $fetch_product = mysqli_fetch_assoc($product_query);
+        ?>
+        <div class="product-info">
+            <div class="image-container">
+                <img class="image" src="uploaded_img/<?php echo $fetch_product['image']; ?>" alt="<?php echo $fetch_product['name']; ?>">
+            </div>
+            <div class="details-container">
+                <div class="name"><?php echo $fetch_product['name']; ?></div>
+                <div class="price">₱<?php echo number_format($fetch_product['price'], 2); ?></div>
 
-   <section class="product-details">
+                <form action="" method="post">
+                    <label for="size">Size:</label>
+                    <select name="size" id="size" required>
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
 
-      <?php
-      if(isset($_GET['id'])){
-         $id = $_GET['id'];
-         $product_query = mysqli_query($conn, "SELECT * FROM `products` WHERE id = $id") or die('query failed');
-         $fetch_product = mysqli_fetch_assoc($product_query);
-      ?>
-      <div class="product-info">
-         <img class="image" src="uploaded_img/<?php echo $fetch_product['image']; ?>" alt="">
-         <div class="name" style="text-align: left;"><?php echo $fetch_product['name']; ?></div>
-         <div class="price" style="text-align: left;">PRICE: ₱ <?php echo $fetch_product['price']; ?></div>
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" min="1" name="product_quantity" value="1" id="quantity" required>
 
-         <form action="" method="post">
-            <label for="size">Size:</label>
-            <select name="size" id="size">
-               <option value="small">Small</option>
-               <option value="medium">Medium</option>
-               <option value="large">Large</option>
-            </select>
+                    <input type="hidden" name="product_name" value="<?php echo $fetch_product['name']; ?>">
+                    <input type="hidden" name="product_price" value="<?php echo $fetch_product['price']; ?>">
+                    <input type="hidden" name="product_image" value="<?php echo $fetch_product['image']; ?>">
+                    
+                    <input type="submit" value="Add to Cart" name="add_to_cart" class="btn">
+                    <input type="button" value="Back to Shop" name="back" class="btn-2" onclick="goBackToShop()">
+                </form>
+            </div>
+        </div>
+        <?php
+        } else {
+            echo '<p class="empty">No product selected!</p>';
+        }
+        ?>
+    </section>
 
-            <label for="quantity">Quantity:</label>
-            <input type="number" min="1" name="product_quantity" value="1" id="quantity">
+    <?php include 'footer.php'; ?>
 
-            <input type="hidden" name="product_name" value="<?php echo $fetch_product['name']; ?>">
-            <input type="hidden" name="product_price" value="<?php echo $fetch_product['price']; ?>">
-            <div class="ddd"></div>
-            <input type="hidden" name="product_image" value="<?php echo $fetch_product['image']; ?>">
-            <div class="shs"></div>
-            <input type="submit" value="Add to Cart" name="add_to_cart" class="btn">
-            <input type="button" value="Back" name="back" class="btn-2" onclick="goBackToShop()">
-            <!-- <input type="submit" value="Buy Now" name="buy_now" class="btn"> -->
-         </form>
-      </div>
-      <?php
-      } else {
-         echo '<p class="empty">No product selected!</p>';
-      }
-      ?>
+    <script>
+        function goBackToShop() {
+            window.location.href = "shop.php";
+        }
+    </script>
 
-   </section>
-
-   <script>
-    function goBackToShop() {
-        window.location.href = "shop.php";
-    }
-   </script>
-
-   <?php include 'footer.php'; ?>
-
-   <script src="js/script.js"></script>
-
+    <script src="js/script.js"></script>
 </body>
 </html>
