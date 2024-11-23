@@ -66,7 +66,7 @@ function getProductIDFromCart($cart_id) {
 
 <section class="shopping-cart">
 
-   <h1 class="title">Products</h1>
+   <h1 class="title">Products Added</h1>
 
    <div class="box-container">
       <?php
