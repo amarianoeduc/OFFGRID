@@ -32,7 +32,7 @@ if(!isset($user_id)){
 
 <div class="heading">
    <h3>your orders</h3>
-   <p> <a href="home.php">Home</a> / Orders </p>
+   <p> <a href="home.php">Home</a> / hehehe </p>
 </div>
 
 <section class="placed-orders">
