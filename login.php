@@ -110,7 +110,7 @@ if (isset($_POST['submit'])) {
 </head>
 <body>
 
-<div class="preloader"></div>  
+<!-- <div class="preloader"></div>   -->
 
 <?php
 if(isset($message)){
