@@ -6,33 +6,9 @@ session_start();
 
 $user_id = $_SESSION['user_id'];
 
-
 if (!isset($user_id)) {
     header('location:login.php');
 }
-
-// if (isset($_POST['cancel_btn'])) {
-//    mysqli_autocommit($conn, false);
-
-//    mysqli_query($conn, "DELETE FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-
-//    $prev_cart_query = mysqli_query($conn, "SELECT * FROM `previous_cart` WHERE user_id = '$user_id'") or die('query failed');
-//    while ($prev_cart_item = mysqli_fetch_assoc($prev_cart_query)) {
-//        $product_name = $prev_cart_item['name'];
-//        $product_price = $prev_cart_item['price'];
-//        $product_quantity = $prev_cart_item['quantity'];
-//        $product_image = $prev_cart_item['image'];
-//        $product_size = $prev_cart_item['size'];
-
-//        mysqli_query($conn, "INSERT INTO `cart` (user_id, name, price, quantity, image, size) VALUES ('$user_id', '$product_name', '$product_price', '$product_quantity', '$product_image', '$product_size')") or die('query failed');
-//        mysqli_query($conn, "DELETE FROM `previous_cart` WHERE user_id = '$user_id'") or die('query failed');
-//    }
-
-//    mysqli_commit($conn);
-
-//    header('location: shop.php');
-//    exit();
-// }
 
 if (isset($_POST['order_btn'])) {
    if (empty($_POST['name']) || empty($_POST['number']) || empty($_POST['email']) || empty($_POST['method']) || empty($_POST['flat']) || empty($_POST['street']) || empty($_POST['city']) || empty($_POST['state']) || empty($_POST['country']) || empty($_POST['pin_code'])) {
@@ -80,6 +56,8 @@ if (isset($_POST['order_btn'])) {
                mysqli_commit($conn);
 
                $message[] = 'Order placed successfully!';
+               header('location:orders.php');
+               exit();
            } else {
                mysqli_rollback($conn);
                $message[] = 'Order could not be placed!';
@@ -87,7 +65,6 @@ if (isset($_POST['order_btn'])) {
        }
    }
 }
-
 
 ?>
 
@@ -107,7 +84,7 @@ if (isset($_POST['order_btn'])) {
       -moz-appearance: textfield;
       appearance: textfield;
    }
-</style>
+   </style>
 
 </head>
 <body>
@@ -142,7 +119,6 @@ if (isset($_POST['order_btn'])) {
 
 </section>
 
-
 <section class="checkout">
    <?php
       $user_query = mysqli_query($conn, "SELECT * FROM `users` WHERE id = '$user_id'");
@@ -154,7 +130,7 @@ if (isset($_POST['order_btn'])) {
       <div class="flex">
          <div class="inputBox">
             <span>Your Name :</span>
-            <input type="text" name="name"  required placeholder="enter your name">
+            <input type="text" name="name" required placeholder="enter your name">
          </div>
          <div class="inputBox">
             <span>Your Number :</span>
@@ -162,7 +138,7 @@ if (isset($_POST['order_btn'])) {
          </div>
          <div class="inputBox">
             <span>Your Email :</span>
-            <input type="email" name="email"  required placeholder="enter your email" value="<?php echo $user_data['email']; ?>">
+            <input type="email" name="email" required placeholder="enter your email" value="<?php echo $user_data['email']; ?>">
          </div>
          <div class="inputBox">
             <span>Payment Method :</span>
@@ -173,15 +149,15 @@ if (isset($_POST['order_btn'])) {
          </div>
          <div class="inputBox">
             <span>Address line 01 :</span>
-            <input type="number" min="0" name="flat"  required placeholder="e.g. flat no.">
+            <input type="number" min="0" name="flat" required placeholder="e.g. flat no.">
          </div>
          <div class="inputBox">
             <span>Address line 02 :</span>
-            <input type="text" name="street"  required placeholder="e.g. street name">
+            <input type="text" name="street" required placeholder="e.g. street name">
          </div>
          <div class="inputBox">
             <span>City :</span>
-            <input type="text" name="city"  required placeholder="e.g. Angeles">
+            <input type="text" name="city" required placeholder="e.g. Angeles">
          </div>
          <div class="inputBox">
             <span>Province :</span>
@@ -196,24 +172,18 @@ if (isset($_POST['order_btn'])) {
             <input type="number" min="0" maxlength="4" name="pin_code" required placeholder="e.g. 2009">
          </div>
       </div>
-      <?php
-         // if (isset($_SESSION['buy_now_clicked']) && $_SESSION['buy_now_clicked']) {
-         //    echo '<input type="submit" value="Cancel" class="btn" name="cancel_buy" onclick="return confirm("Are you sure you want to cancel?")">';
-         //    $_SESSION['buy_now_clicked'] = false;
-         // }
-      ?>
       <input type="submit" value="order now" class="btn" name="order_btn">
    </form>
 
 </section>
 
-   <script>
-      function limitNumberLength(input, maxLength) {
-         if (input.value.length > maxLength) {
-            input.value = input.value.slice(0, maxLength);
-         }
+<script>
+   function limitNumberLength(input, maxLength) {
+      if (input.value.length > maxLength) {
+         input.value = input.value.slice(0, maxLength);
       }
-   </script>
+   }
+</script>
 
 <?php include 'footer.php'; ?>
 
